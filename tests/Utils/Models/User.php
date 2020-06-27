@@ -2,6 +2,7 @@
 
 namespace Tests\Utils\Models;
 
+use BenSampo\Enum\Traits\CastsEnums;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\BelongsToMany;
@@ -18,6 +19,7 @@ use Illuminate\Foundation\Auth\User as Authenticatable;
  * @property string|null $name
  * @property string|null $email
  * @property string|null $password
+ * @property int $hair_color
  * @property \Carbon\Carbon $created_at
  * @property \Carbon\Carbon $updated_at
  *
@@ -26,6 +28,20 @@ use Illuminate\Foundation\Auth\User as Authenticatable;
  */
 class User extends Authenticatable
 {
+//    use CastsEnums;
+
+    protected $fillable = [
+        'hair_color'
+    ];
+
+    protected $casts = [
+        'hair_color' => 'int',
+    ];
+//
+//    protected $enumCasts = [
+//        'hair_color' => CarrierPlanType::class,
+//    ];
+
     public function company(): BelongsTo
     {
         return $this->belongsTo(Company::class);

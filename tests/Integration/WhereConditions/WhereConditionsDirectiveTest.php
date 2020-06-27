@@ -16,6 +16,7 @@ class WhereConditionsDirectiveTest extends DBTestCase
         id: ID!
         name: String
         email: String
+        hair_color: HairColorEnum!
     }
 
     type Post {
@@ -39,6 +40,14 @@ class WhereConditionsDirectiveTest extends DBTestCase
     enum UserColumn {
         ID @enum(value: "id")
         NAME @enum(value: "name")
+        HAIR @enum(value: "hair_color")
+    }
+
+    enum HairColorEnum {
+        RED @enum(value: 0)
+        BROWN @enum(value: 1)
+        BLONDE @enum(value: 2)
+        WHITE @enum(value: 3)
     }
     ';
 
@@ -527,6 +536,82 @@ class WhereConditionsDirectiveTest extends DBTestCase
                 'users' => [
                     [
                         'id' => '1',
+                    ],
+                ],
+            ],
+        ]);
+    }
+
+    public function testCheckEnumColumn(): void
+    {
+        factory(User::class)->create(['hair_color'=> 2]);
+        factory(User::class)->create(['hair_color'=> 3]);
+
+        $this->graphQL(/** @lang GraphQL */ '
+        {
+            enumColumns(
+                where: {
+                    AND: [
+                        {
+                            column: HAIR
+                            operator: IN
+                            value: [2, 3]
+                        }
+                    ]
+                }
+            ) {
+                id
+                hair_color
+            }
+        }
+        ')->assertExactJson([
+            'data' => [
+                'enumColumns' => [
+                    [
+                        'id' => '1',
+                        'hair_color' => 'BLONDE',
+                    ],
+                    [
+                        'id' => '2',
+                        'hair_color' => 'WHITE',
+                    ],
+                ],
+            ],
+        ]);
+    }
+
+    public function testCheckEnumCastedColumn(): void
+    {
+        factory(User::class)->create(['hair_color'=> 2]);
+        factory(User::class)->create(['hair_color'=> 3]);
+
+        $this->graphQL(/** @lang GraphQL */ '
+        {
+            enumColumns(
+                where: {
+                    AND: [
+                        {
+                            column: HAIR
+                            operator: IN
+                            value: ["BLONDE", "WHITE"]
+                        }
+                    ]
+                }
+            ) {
+                id
+                hair_color
+            }
+        }
+        ')->assertExactJson([
+            'data' => [
+                'enumColumns' => [
+                    [
+                        'id' => '1',
+                        'hair_color' => 'BLONDE',
+                    ],
+                    [
+                        'id' => '2',
+                        'hair_color' => 'WHITE',
                     ],
                 ],
             ],
